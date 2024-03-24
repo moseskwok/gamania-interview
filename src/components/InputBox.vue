@@ -40,7 +40,7 @@ function submitForm(){
 
   let finalHour = parseInt(day.value)*24 + parseInt(hour.value);
   emits('setTime',finalHour,min.value,sec.value)
-  alertMessage('成功啟動倒數',1);
+  alertMessage('成功設定倒數',1);
 }
 </script>
 
