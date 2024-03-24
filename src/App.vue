@@ -1,19 +1,20 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import Countdown from './components/Countdown.vue'
 import InputBox from './components/InputBox.vue'
 import Button from "@/components/Button.vue"
 
-const totalTime = ref(0);
 const hour = ref(0);
 const min = ref(0);
 const sec = ref(0);
+const totalTime = computed(() => {
+  return hour.value*3600 + min.value*60 + sec.value;
+});
 
 function setTime(h, m, s){
   hour.value = parseInt(h);
   min.value = parseInt(m);
   sec.value = parseInt(s);
-  totalTime.value = h*3600 + m*60 + s;
 }
 
 function resetTimer(){
