@@ -4,8 +4,12 @@ import Swal from "sweetalert2";
 import Button from "@/components/Button.vue";
 
 const props = defineProps(['hour','min','sec']);
-const isCounting = ref(true);
-const targetDate = new Date();
+const isStarted = ref(false);
+const isCounting = ref(false);
+const hour = ref(0);
+const min = ref(0);
+const sec = ref(0);
+const targetDate = ref(new Date());
 
 function getTimeSegmentElements(segmentElement) {
   const segmentDisplay = segmentElement.querySelector('.segment-display');
@@ -106,7 +110,7 @@ function getTimeRemaining(targetDateTime) {
 }
 
 function updateAllSegments() {
-  const timeRemainingBits = getTimeRemaining(new Date(targetDate).getTime());
+  const timeRemainingBits = getTimeRemaining(new Date(targetDate.value).getTime());
 
   updateTimeSection('seconds', timeRemainingBits.seconds);
   updateTimeSection('minutes', timeRemainingBits.minutes);
@@ -116,7 +120,13 @@ function updateAllSegments() {
 }
 
 function startTimer(){
+  isStarted.value = true;
   isCounting.value = true;
+  targetDate.value = new Date();
+  targetDate.value.setHours(targetDate.value.getHours() + hour.value);
+  targetDate.value.setMinutes(targetDate.value.getMinutes() + min.value);
+  targetDate.value.setSeconds(targetDate.value.getSeconds() + sec.value + 1);
+
   countdownTimer = setInterval(() => {
     const isComplete = updateAllSegments();
 
@@ -129,25 +139,25 @@ function startTimer(){
   }, 1000);
 }
 function stopTimer(){
+  const timeRemainingBits = getTimeRemaining(new Date(targetDate.value).getTime());
+  hour.value = timeRemainingBits.hours;
+  min.value = timeRemainingBits.minutes;
+  sec.value = timeRemainingBits.seconds;
+
   isCounting.value = false;
   clearInterval(countdownTimer);
 }
 
-let countdownTimer = setInterval(() => {
-  const isComplete = updateAllSegments();
-
-  if (isComplete) {
-    stopTimer();
-    Swal.fire({
-      title: '倒數已結束！',
-    });
-  }
-}, 1000);
+let countdownTimer = null;
 
 onMounted(() => {
-  targetDate.setHours(targetDate.getHours() + props.hour);
-  targetDate.setMinutes(targetDate.getMinutes() + props.min);
-  targetDate.setSeconds(targetDate.getSeconds() + props.sec);
+  hour.value = props.hour;
+  min.value = props.min;
+  sec.value = props.sec;
+
+  updateTimeSection('hours', hour.value);
+  updateTimeSection('minutes', min.value);
+  updateTimeSection('seconds', sec.value);
 });
 
 onUnmounted(() => {
@@ -161,7 +171,7 @@ onUnmounted(() => {
 <template>
   <div>
     <div class="badge-div">
-      <div v-show="!isCounting" class="badge">
+      <div v-show="isStarted && !isCounting" class="badge">
         Pause ⏸️
       </div>
     </div>
@@ -248,7 +258,7 @@ onUnmounted(() => {
 
     <div>
       <Button v-if="isCounting" text="暫停" @click="stopTimer()"/>
-      <Button v-else text="繼續" @click="startTimer()"/>
+      <Button v-else :text="isStarted ? '繼續' : '開始'" @click="startTimer()"/>
     </div>
   </div>
 </template>
@@ -284,7 +294,13 @@ onUnmounted(() => {
   margin: 20px 0 20px 0;
 }
 
-.time-section {
+@media screen and (max-width:800px) {
+  .countdown {
+    display: grid;
+  }
+}
+
+  .time-section {
   text-align: center;
   font-size: 30px;
 }
